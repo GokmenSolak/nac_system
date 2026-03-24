@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:18-alpine
@@ -26,6 +24,23 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  api:
+    build: ./api
+    container_name: nac_api
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    networks:
+      - nac_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./api:/app
 
 networks:
   nac_network:
