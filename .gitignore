@@ -1,0 +1,9 @@
+# Çevre Deðiþkenleri ve Gizli Dosyalar
+.env
+
+# Python Geçici Dosyalarý
+__pycache__/
+*.pyc
+
+# Visual Studio Gizli Klasörü
+.vs/
