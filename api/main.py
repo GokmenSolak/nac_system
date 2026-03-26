@@ -107,9 +107,38 @@ async def authorize_user(req: AuthzRequest):
                 "attributes": attributes
             }
 
+class AcctRequest(BaseModel):
+    username: str
+    session_id: str
+    status_type: str
+    nas_ip: str
+    input_octets: Optional[int] = 0
+    output_octets: Optional[int] = 0
+    terminate_cause: Optional[str] = ""
+
 @app.post("/accounting")
-async def accounting_record(request: Request):
-    return {"status": "success", "message": "Accounting endpoint hazir"}
+async def accounting_record(req: AcctRequest):
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            if req.status_type == "Start":
+                cur.execute(
+                    """INSERT INTO radacct 
+                       (username, acctsessionid, nasipaddress, acctstarttime) 
+                       VALUES (%s, %s, %s, NOW())""",
+                    (req.username, req.session_id, req.nas_ip)
+                )
+            elif req.status_type == "Stop":
+                cur.execute(
+                    """UPDATE radacct 
+                       SET acctstoptime = NOW(), 
+                           acctinputoctets = %s, 
+                           acctoutputoctets = %s, 
+                           acctterminatecause = %s
+                       WHERE acctsessionid = %s AND username = %s AND acctstoptime IS NULL""",
+                    (req.input_octets, req.output_octets, req.terminate_cause, req.session_id, req.username)
+                )
+            conn.commit()
+            return {"status": "success", "message": "Log basariyla kaydedildi"}
 
 @app.get("/users")
 async def get_users():
