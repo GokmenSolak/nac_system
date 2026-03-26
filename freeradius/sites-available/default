@@ -1,0 +1,13 @@
+server default {
+    authorize {
+        rest
+    }
+
+    authenticate {
+        rest
+    }
+
+    accounting {
+        rest
+    }
+}

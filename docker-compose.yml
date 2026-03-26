@@ -43,6 +43,21 @@ services:
     volumes:
       - ./api:/app
 
+  freeradius:
+      image: freeradius/freeradius-server:alpine
+      container_name: nac_freeradius
+      ports:
+        - "1812:1812/udp"
+        - "1813:1813/udp"
+      networks:
+        - nac_network
+      depends_on:
+        - api
+        - postgres
+      volumes:
+        - ./freeradius/mods-available/rest:/etc/raddb/mods-available/rest
+        - ./freeradius/sites-available/default:/etc/raddb/sites-available/default
+
 networks:
   nac_network:
     driver: bridge
