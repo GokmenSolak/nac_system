@@ -1,20 +1,41 @@
 server default {
+
     listen {
         type = auth
         ipaddr = *
         port = 1812
     }
+
     listen {
         type = acct
         ipaddr = *
         port = 1813
     }
+
     authorize {
-        rest
+    if (Calling-Station-Id && !User-Password) {
+        update request {
+            User-Name := "%{Calling-Station-Id}"
+        }
+    }
+    rest
+    if (User-Password) {
         update control {
             Auth-Type := rest
         }
     }
+    elsif (Calling-Station-Id && !User-Password) {
+        if ("%{reply:REST-HTTP-Status-Code}" == "200") {
+            update control {
+                Auth-Type := Accept
+            }
+        }
+        else {
+            reject
+        }
+    }
+}
+
     authenticate {
         Auth-Type rest {
             rest
@@ -22,7 +43,11 @@ server default {
                 ok
             }
         }
+        Auth-Type Accept {
+            ok
+        }
     }
+
     accounting {
         rest
     }
