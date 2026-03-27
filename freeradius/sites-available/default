@@ -1,12 +1,28 @@
 server default {
+    listen {
+        type = auth
+        ipaddr = *
+        port = 1812
+    }
+    listen {
+        type = acct
+        ipaddr = *
+        port = 1813
+    }
     authorize {
         rest
+        update control {
+            Auth-Type := rest
+        }
     }
-
     authenticate {
-        rest
+        Auth-Type rest {
+            rest
+            if (updated) {
+                ok
+            }
+        }
     }
-
     accounting {
         rest
     }
